@@ -24,6 +24,7 @@ dirname, basename = os.path.split(filepath)
 filename, filetype = os.path.splitext(basename)
 destination_filepath = os.path.join(dirname, (filename + '.xlsx'))
 
+# get the namespace details
 iterparse =  xml.etree.ElementTree.iterparse(filepath, ('start', 'start-ns'))
 events = "start", "start-ns"
 ns = {}
@@ -37,11 +38,14 @@ for event, elem in xml.etree.ElementTree.iterparse(filepath, events):
 xmlns = ns['xmlns']
 xsi = '{' +  ns['xsi'] + "}"
 
+# ensure the xml has the correct Model Exchange namespace
 if not 'www.opengroup.org/xsd/archimate' in xmlns:
     print("This is not a Model Exchange file")
     exit()
 
+# OrbusInfinity does not use junctions
 lst_exceptions = ["AndJunction", "OrJunction"]
+# Create lists with headers 
 lst_elements = [("Type", "Name", "Identifier")]
 lst_relationships = [
     (
@@ -53,11 +57,13 @@ lst_relationships = [
     )
     ]
 
+# extract the objects and relationships from the xml
 tree = xml.etree.ElementTree.parse(filepath)
 root = tree.getroot()
 relationships = root.findall('xmlns:relationships/xmlns:relationship', ns)
 elements = root.findall('xmlns:elements/xmlns:element', ns)
 
+#add the objects to the list
 for element in elements:
     identifier = element.attrib['identifier']
     element_type = element.attrib[xsi + "type"]
@@ -69,6 +75,7 @@ for element in elements:
         element_details = (orbus_element_type, name, identifier)
         lst_elements.append(element_details)
 
+# add the relationships to the list
 for relationship in relationships:
     source_id = relationship.attrib['source']
     target_id = relationship.attrib['target']
@@ -85,9 +92,11 @@ for relationship in relationships:
         relationship_details = (source_name, source_type, orbus_relationship_type, target_name, target_type)
         lst_relationships.append(relationship_details)
 
+# generate the excel spreadsheet and workbooks
 wb = openpyxl.Workbook()
 ws_objects = wb.create_sheet("Objects", 0)
 
+# avoid duplicate objects
 unique_list = []
 for orbus_object in lst_elements:
     orbus_type, name, identifier = orbus_object
