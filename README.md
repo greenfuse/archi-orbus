@@ -1,5 +1,5 @@
 # archi-orbus
-Python script to create Orbus uploadable xlsx from archimate Model Exchange file (such as exported from Archi). This is to enable modelled objects and relationships to be uploaded into OrbusInfinity.
+Python script to create Orbus uploadable xlsx from archimate Model Exchange file (such as xml exported from Archi). This is to enable modelled objects and relationships to be uploaded into OrbusInfinity.
  
 Requires the python openpyxl module which can be installed via pip.
 
