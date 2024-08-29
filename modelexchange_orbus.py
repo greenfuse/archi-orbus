@@ -24,7 +24,6 @@ dirname, basename = os.path.split(filepath)
 filename, filetype = os.path.splitext(basename)
 destination_filepath = os.path.join(dirname, (filename + '.xlsx'))
 
-# get the namespace details
 iterparse =  xml.etree.ElementTree.iterparse(filepath, ('start', 'start-ns'))
 events = "start", "start-ns"
 ns = {}
@@ -38,15 +37,13 @@ for event, elem in xml.etree.ElementTree.iterparse(filepath, events):
 xmlns = ns['xmlns']
 xsi = '{' +  ns['xsi'] + "}"
 
-# ensure the xml has the correct Model Exchange namespace
 if not 'www.opengroup.org/xsd/archimate' in xmlns:
     print("This is not a Model Exchange file")
     exit()
 
-# OrbusInfinity does not use junctions
 lst_exceptions = ["AndJunction", "OrJunction"]
-# Create lists with headers 
-lst_elements = [("Type", "Name", "Identifier")]
+dict_elements = {}
+lst_elements = [["Type", "Name", "Identifier"]]
 lst_relationships = [
     (
     "Lead: Name", 
@@ -57,33 +54,54 @@ lst_relationships = [
     )
     ]
 
-# extract the objects and relationships from the xml
 tree = xml.etree.ElementTree.parse(filepath)
 root = tree.getroot()
 relationships = root.findall('xmlns:relationships/xmlns:relationship', ns)
 elements = root.findall('xmlns:elements/xmlns:element', ns)
+prop_defs = root.findall('xmlns:propertyDefinitions/xmlns:propertyDefinition', ns)
+prop_dict = {}
 
-#add the objects to the list
+if prop_defs:
+    for prop_def in prop_defs:
+        prop_name = prop_def.find('xmlns:name', ns).text
+        if prop_name:
+            prop_id = prop_def.attrib['identifier']
+            prop_dict[prop_id] = prop_name
+            lst_elements[0].append(prop_name)
+
 for element in elements:
     identifier = element.attrib['identifier']
     element_type = element.attrib[xsi + "type"]
-    orbus_element_type = re.sub( r"([A-Z])", r" \1", element_type).lstrip()
-    orbus_element_type = orbus_element_type.capitalize()
-    name_element = element.find('xmlns:name', ns)
-    name = name_element.text
-    if name not in lst_exceptions:
-        element_details = (orbus_element_type, name, identifier)
+    if element_type not in lst_exceptions:
+        # separate capitalised words
+        orbus_element_type = re.sub( r"([A-Z])", r" \1", element_type).lstrip()
+        orbus_element_type = orbus_element_type.capitalize()
+        
+        name = element.find('xmlns:name', ns).text
+        element_details = [orbus_element_type, name, identifier]
+        properties = element.findall('xmlns:properties/xmlns:property', ns)
+        dict_prop = {}
+        if properties:
+            for property in properties:
+                prop_ref = property.attrib['propertyDefinitionRef']
+                prop_name = prop_dict[prop_ref]
+                prop_value = property.find('xmlns:value', ns).text
+                dict_prop[prop_name] = prop_value
+            for prop_header in lst_elements[0][3:]:
+                if prop_header in dict_prop:
+                    element_details.append(dict_prop[prop_header])
+                else:
+                    element_details.append("")
         lst_elements.append(element_details)
 
-# add the relationships to the list
 for relationship in relationships:
     source_id = relationship.attrib['source']
     target_id = relationship.attrib['target']
     for item in lst_elements:
-        if source_id in item:
+        if source_id == item[2]:
             source_type = item[0]
             source_name = item[1]
-        if target_id in item:
+        if target_id == item[2]:
             target_type = item[0]
             target_name = item[1]
     if source_name and target_name:
@@ -92,18 +110,13 @@ for relationship in relationships:
         relationship_details = (source_name, source_type, orbus_relationship_type, target_name, target_type)
         lst_relationships.append(relationship_details)
 
-# generate the excel spreadsheet and workbooks
 wb = openpyxl.Workbook()
 ws_objects = wb.create_sheet("Objects", 0)
 
-# avoid duplicate objects
-unique_list = []
+
 for orbus_object in lst_elements:
-    orbus_type, name, identifier = orbus_object
-    detail = (orbus_type, name)
-    if detail not in unique_list:
-        unique_list.append(detail)
-        ws_objects.append(detail)
+    orbus_object.pop(2)
+    ws_objects.append(orbus_object)
     
 ws_relationships = wb.create_sheet("Relationships", 1)
 
