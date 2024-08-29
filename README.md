@@ -1,5 +1,5 @@
 # archi-orbus
-Python script to create Orbus uploadable xlsx from archimate Model Exchange file. To enable modelled objects and relationships to be uploaded into OrbusInfinity.
+Python script to create Orbus uploadable xlsx from archimate Model Exchange file (such as exported from Archi). This is to enable modelled objects and relationships to be uploaded into OrbusInfinity.
  
 Requires the python openpyxl module which can be installed via pip.
 
@@ -9,8 +9,8 @@ Run modelexchange_orbus.py with python. Raises a prompt for the selection of an 
 
  The new spreadsheet includes: 
   - Worksheets for Objects and Relationships.
-  - element properties that can be uploaded as object attributes.
-  - Hidden elements that are not in a view.
+  - Object sheet has columns with element properties. If the column header matches an object attribute, it will be uploaded in Orbus.
+  - Hidden elements and relationships that are not in a view (soft deleted). If you don't want these, delete from Archi before exporting the xml.
   - No relationship junctions (And/Or), these are not used in Orbus.
 
 All efforts have been made to ensure that this works for me but if you want to try it, use this at your own risk.
