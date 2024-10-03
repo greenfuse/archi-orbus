@@ -11,7 +11,8 @@ Run modelexchange_orbus.py with python. Raises a prompt for the selection of an 
   - Worksheets for Objects and Relationships.
   - Object sheet has columns with element properties. If the column header matches an object attribute, it will be uploaded in Orbus.
   - Hidden elements and relationships that are not in a view (soft deleted). If you don't want these, delete from Archi before exporting the xml.
- Not supported:
+ 
+Not supported:
   - Relationship junctions (And/Or), these are not used in Orbus out of the box.
   - Container elements. These are not used in Orbus out of the box.
 
