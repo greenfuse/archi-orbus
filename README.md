@@ -3,7 +3,7 @@ Python script to create Orbus uploadable xlsx from archimate Model Exchange file
  
 Requires the python openpyxl module which can be installed via pip.
 
-For OrbusInfinity with the 'Core EA & Archimate' 3.1 solution
+For OrbusInfinity with the 'Core EA & Archimate' 3.1 metamodel definition.
 
 ### Usage
 Run modelexchange_orbus.py with python. This raises a prompt for the selection of an xml file. The file needs to be a Model Exchange file, such as an xml export from Archi. The script creates a new excel file in the same folder as the xml file. This new file has the same name but with the .xlsx extension. The excel file is formatted for upload into OrbusInfinity.
